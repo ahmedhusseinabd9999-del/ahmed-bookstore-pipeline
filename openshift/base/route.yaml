@@ -1,0 +1,12 @@
+apiVersion: route.openshift.io/v1
+kind: Route
+metadata:
+  name: bookstore-route
+  labels:
+    app: bookstore
+spec:
+  to:
+    kind: Service
+    name: frontend # لازم يكون نفس اسم الـ Service بتاعة الفرونت اند
+  port:
+    targetPort: 8080

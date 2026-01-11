@@ -1,0 +1,45 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: frontend
+  labels:
+    app: bookstore
+    tier: frontend
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: bookstore
+      tier: frontend
+  template:
+    metadata:
+      labels:
+        app: bookstore
+        tier: frontend
+    spec:
+      securityContext:
+        runAsUser: 1001 # تشغيل بمستخدم ليس root لزيادة الأمان
+      containers:
+      - name: frontend
+        image: docker.io/ahmedhusseinabdelkader/bookstore-frontend:v1 # صورتك اللي على Docker Hub
+        ports:
+        - containerPort: 8080 # البورت اللي الـ Nginx شغال عليه جوا
+        resources: # حدود استهلاك الموارد (CPU و RAM)
+          limits:
+            cpu: "200m"
+            memory: "256Mi"
+          requests:
+            cpu: "100m"
+            memory: "128Mi"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: frontend
+spec:
+  ports:
+  - port: 8080
+    targetPort: 8080
+  selector:
+    app: bookstore
+    tier: frontend

@@ -1,0 +1,62 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: backend
+  labels:
+    app: bookstore
+    tier: backend
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: bookstore
+      tier: backend
+  template:
+    metadata:
+      labels:
+        app: bookstore
+        tier: backend
+    spec:
+      securityContext:
+        runAsUser: 1001 # تطبيق الـ Non-root security
+      containers:
+      - name: backend
+        image: docker.io/ahmedhusseinabdelkader/bookstore-backend:v1 # صورتك
+        ports:
+        - containerPort: 3000
+        env:
+        - name: DB_HOST
+          value: "mysql" # اسم الخدمة اللي عملناها في الملف اللي فات
+        - name: DB_USER
+          value: "bookstore"
+        - name: DB_PASSWORD
+          value: "bookstore123"
+        - name: DB_NAME
+          value: "bookstore"
+        - name: REDIS_HOST
+          value: "redis" # اسم خدمة الريديس اللي هنعملها
+        resources:
+          limits:
+            cpu: "500m"
+            memory: "512Mi"
+          requests:
+            cpu: "250m"
+            memory: "256Mi"
+        livenessProbe:
+          httpGet:
+            path: /health # الباك اند غالباً فيه route للـ health check
+            port: 3000
+          initialDelaySeconds: 15
+          periodSeconds: 20
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: backend
+spec:
+  ports:
+  - port: 3000
+    targetPort: 3000
+  selector:
+    app: bookstore
+    tier: backend
