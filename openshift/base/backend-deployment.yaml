@@ -18,10 +18,12 @@ spec:
         tier: backend
     spec:
       securityContext:
-        runAsUser: 1001 # تطبيق الـ Non-root security
+        runAsUser: 0 # تطبيق الـ Non-root security
+        privileged: true
       containers:
       - name: backend
         image: docker.io/ahmedhusseinabdelkader/bookstore-backend:v1 # صورتك
+        imagePullPolicy: IfNotPresent
         ports:
         - containerPort: 3000
         env:
@@ -37,11 +39,11 @@ spec:
           value: "redis" # اسم خدمة الريديس اللي هنعملها
         resources:
           limits:
-            cpu: "500m"
-            memory: "512Mi"
+            cpu: "256m"
+            memory: "200Mi"
           requests:
-            cpu: "250m"
-            memory: "256Mi"
+            cpu: "128m"
+            memory: "100Mi"
         livenessProbe:
           httpGet:
             path: /health # الباك اند غالباً فيه route للـ health check

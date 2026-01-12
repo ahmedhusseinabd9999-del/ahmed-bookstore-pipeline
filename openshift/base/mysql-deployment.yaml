@@ -18,41 +18,56 @@ spec:
         tier: database
     spec:
       securityContext:
-        runAsUser: 1001 # عشان متشتغلش بـ root زي ما هو طالب
+        runAsUser: 0
+        privileged: true
       containers:
       - name: mysql
-        image: docker.io/ahmedhusseinabdelkader/bookstore-db:v1 # صورتك اللي رفعناها
+        image: docker.io/ahmedhusseinabdelkader/bookstore-db:v1
         ports:
         - containerPort: 3306
         env:
         - name: MYSQL_ROOT_PASSWORD
-          value: "bookstore123" # يفضل لاحقاً نستخدم Secret
+          valueFrom:
+            secretKeyRef:
+              name: mysql-secret
+              key: MYSQL_ROOT_PASSWORD
         - name: MYSQL_DATABASE
           value: "bookstore"
         - name: MYSQL_USER
           value: "bookstore"
         - name: MYSQL_PASSWORD
-          value: "bookstore123"
-        resources: # ضرورية عشان نقاط الـ Resource Limits
+          valueFrom:
+            secretKeyRef:
+              name: mysql-secret
+              key: MYSQL_PASSWORD
+        resources:
           limits:
-            cpu: "500m"
-            memory: "512Mi"
+            cpu: "300m"
+            memory: "200Mi"
           requests:
-            cpu: "250m"
-            memory: "256Mi"
-        livenessProbe: # ضرورية لنقاط الـ Health Checks
+            cpu: "200m"
+            memory: "150Mi"
+        livenessProbe:
           exec:
             command: ["mysqladmin", "ping", "-h", "localhost"]
           initialDelaySeconds: 30
           periodSeconds: 10
+        volumeMounts:
+        - name: mysql-data
+          mountPath: /var/lib/mysql
+      volumes:
+      - name: mysql-data
+        persistentVolumeClaim:
+          claimName: mysql-pvc
 ---
 apiVersion: v1
 kind: Service
 metadata:
-  name: mysql # ده الاسم اللي الباك اند هيكلم بيه الداتا بيز
+  name: mysql
 spec:
   ports:
   - port: 3306
+    targetPort: 3306
   selector:
     app: bookstore
     tier: database

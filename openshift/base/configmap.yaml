@@ -1,0 +1,8 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: app-config
+data:
+  DB_NAME: "inventory"
+  CACHE_ENABLED: "true"
+  FEATURE_FLAG_NEW_UI: "false" # Professional way to toggle features
